@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapeamento Comportamental & Clima — Bessa</title>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --az:#3BB3C3;--az2:#1a6a7a;--az3:#0a1f28;
+  --ok:#10B981;--err:#EF4444;--warn:#F59E0B;
+  --D:#EF4444;--I:#F59E0B;--S:#10B981;--C:#3B82F6;
+  --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:#0a1520;color:#fff;min-height:100vh;overflow-x:hidden}
+
+/* HERO */
+.hero{background:linear-gradient(160deg,#0a1f28 0%,#0d3040 50%,#0a2535 100%);padding:52px 24px 64px;text-align:center;position:relative;overflow:hidden;border-bottom:1px solid rgba(59,179,195,.15)}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(59,179,195,.12) 0%,transparent 70%);pointer-events:none}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(59,179,195,.12);border:1px solid rgba(59,179,195,.3);border-radius:30px;padding:7px 18px;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:24px;font-family:'Inter',sans-serif;color:var(--az)}
+.hero h1{font-family:'Urbanist',sans-serif;font-size:clamp(28px,5vw,44px);font-weight:800;line-height:1.1;margin-bottom:14px;letter-spacing:-1px}
+.hero h1 em{font-style:normal;color:var(--az)}
+.hero p{font-size:15px;color:rgba(255,255,255,.55);max-width:460px;margin:0 auto 28px;line-height:1.7}
+.hero-tempo{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:8px 20px;font-size:13px;font-weight:500;color:rgba(255,255,255,.7)}
+
+/* PROGRESSO */
+.prog{background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.06);padding:16px 24px;position:sticky;top:0;z-index:100;backdrop-filter:blur(10px)}
+.prog-inner{max-width:700px;margin:0 auto}
+.prog-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px}
+.prog-label{font-weight:600;color:rgba(255,255,255,.8)}
+.prog-pct{font-family:'Inter',sans-serif;font-weight:700;color:var(--az);font-size:13px}
+.prog-bar{height:4px;background:rgba(255,255,255,.08);border-radius:10px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--az),var(--ok));border-radius:10px;transition:width .6s ease}
+.etapas{display:flex;gap:5px;justify-content:center;margin-top:10px}
+.ed{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.15);transition:.3s}
+.ed.ok{background:var(--ok)}
+.ed.av{background:var(--az);transform:scale(1.4)}
+
+/* CONTAINER */
+.wrap{max-width:720px;margin:0 auto;padding:32px 20px 80px}
+.sec{display:none;animation:fu .35s ease}
+.sec.ativa{display:block}
+@keyframes fu{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* CARD */
+.card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:var(--r);padding:24px;margin-bottom:16px}
+.card-titulo{font-family:'Urbanist',sans-serif;font-size:11px;font-weight:700;color:var(--az);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+
+/* IDENTIFICAÇÃO */
+.id-wrap{text-align:center;padding:48px 20px}
+.id-wrap h2{font-family:'Urbanist',sans-serif;font-size:26px;font-weight:800;margin-bottom:8px}
+.id-wrap p{color:rgba(255,255,255,.5);font-size:14px;margin-bottom:32px;line-height:1.6}
+.cpf-inp{width:100%;max-width:300px;padding:18px 24px;font-size:22px;font-family:'Inter',sans-serif;font-weight:700;text-align:center;letter-spacing:4px;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.1);border-radius:12px;color:#fff;outline:none;transition:.3s}
+.cpf-inp:focus{border-color:var(--az);background:rgba(59,179,195,.08)}
+.cpf-fb{min-height:20px;margin:12px 0;font-size:13px;font-weight:600;text-align:center}
+.p-card{background:rgba(59,179,195,.08);border:1.5px solid rgba(59,179,195,.3);border-radius:12px;padding:20px;max-width:400px;margin:20px auto;text-align:center}
+.p-nome{font-family:'Urbanist',sans-serif;font-size:20px;font-weight:800;margin-bottom:4px}
+.p-info{font-size:13px;color:var(--az);font-weight:600}
+.nova-box{background:rgba(245,158,11,.06);border:1.5px solid rgba(245,158,11,.2);border-radius:12px;padding:16px 20px;max-width:520px;margin:0 auto 20px}
+.nova-box-t{font-size:12px;font-weight:700;color:var(--warn);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+
+/* CAMPOS */
+.campo{margin-bottom:14px}
+.campo label{display:block;font-size:11px;font-weight:600;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.campo input,.campo select,.campo textarea{width:100%;padding:11px 15px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);border-radius:9px;font-size:14px;font-family:'Inter',sans-serif;color:#fff;outline:none;transition:.2s}
+.campo input:focus,.campo select:focus,.campo textarea:focus{border-color:var(--az);background:rgba(59,179,195,.07)}
+.campo select option{background:#0d2535}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* DISC */
+.dq{margin-bottom:28px}
+.dq-n{font-size:11px;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-family:'Inter',sans-serif}
+.dq-t{font-size:15px;font-weight:600;font-family:'Urbanist',sans-serif;margin-bottom:14px;line-height:1.45;color:rgba(255,255,255,.95)}
+.dq-opts{display:grid;gap:8px}
+.dopt{padding:14px 18px;background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.08);border-radius:10px;cursor:pointer;font-size:14px;transition:.2s;display:flex;align-items:flex-start;gap:12px;line-height:1.5;color:rgba(255,255,255,.8)}
+.dopt:hover{border-color:var(--az);background:rgba(59,179,195,.07);color:#fff}
+.dopt.sel{border-color:var(--az);background:rgba(59,179,195,.13);color:#fff}
+.dopt-ico{width:28px;height:28px;border-radius:50%;background:rgba(59,179,195,.15);border:1px solid rgba(59,179,195,.3);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--az);margin-top:1px}
+.dopt.sel .dopt-ico{background:var(--az);color:#fff;border-color:var(--az)}
+
+/* CLIMA */
+.cq{margin-bottom:22px}
+.cq-fator{font-size:10px;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.cq-t{font-size:15px;font-weight:500;margin-bottom:14px;line-height:1.5;color:rgba(255,255,255,.9)}
+.cq-esc{display:flex;gap:8px}
+.copt{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer}
+.copt-btn{width:100%;padding:13px 4px;background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.08);border-radius:9px;font-size:15px;font-weight:800;color:rgba(255,255,255,.4);transition:.2s;text-align:center;cursor:pointer;font-family:'Inter',sans-serif}
+.copt-btn:hover{border-color:var(--az);color:#fff}
+.copt-lbl{font-size:9px;color:rgba(255,255,255,.25);text-align:center;line-height:1.3;max-width:48px}
+.copt.s1 .copt-btn{background:rgba(239,68,68,.15);border-color:var(--err);color:var(--err)}
+.copt.s2 .copt-btn{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.4);color:rgba(239,68,68,.8)}
+.copt.s3 .copt-btn{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.8)}
+.copt.s4 .copt-btn{background:rgba(59,179,195,.1);border-color:rgba(59,179,195,.4);color:var(--az)}
+.copt.s5 .copt-btn{background:rgba(16,185,129,.15);border-color:var(--ok);color:var(--ok)}
+
+/* BOTÕES */
+.btns{display:flex;gap:10px;margin-top:24px}
+.btn{padding:14px 26px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;border:none;transition:.2s;letter-spacing:.2px}
+.btn-p{flex:2;background:linear-gradient(135deg,var(--az),var(--az2));color:#fff}
+.btn-p:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.btn-s{flex:1;background:rgba(255,255,255,.06);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.1)}
+.btn-s:hover{background:rgba(255,255,255,.1)}
+
+/* RESULTADO */
+.res-hero{text-align:center;padding:36px 20px 24px}
+.perf-circulo{width:100px;height:100px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Urbanist',sans-serif;font-size:13px;font-weight:800;margin:0 auto 16px;line-height:1.2;padding:10px;text-align:center;border:2px solid}
+.pD .perf-circulo{background:rgba(239,68,68,.12);border-color:var(--D);color:var(--D)}
+.pI .perf-circulo{background:rgba(245,158,11,.12);border-color:var(--I);color:var(--I)}
+.pS .perf-circulo{background:rgba(16,185,129,.12);border-color:var(--S);color:var(--S)}
+.pC .perf-circulo{background:rgba(59,130,246,.12);border-color:var(--C);color:var(--C)}
+.perf-nome{font-family:'Urbanist',sans-serif;font-size:22px;font-weight:800;margin-bottom:6px}
+.perf-foco{font-size:13px;color:rgba(255,255,255,.4);margin-bottom:14px;font-weight:500}
+.perf-desc{font-size:14px;color:rgba(255,255,255,.7);line-height:1.75;max-width:500px;margin:0 auto}
+
+/* SCORE */
+.score-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 20px;border-radius:30px;font-size:13px;font-weight:700;margin:16px auto;border:1.5px solid}
+.sc-verde{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.4);color:var(--ok)}
+.sc-amarelo{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.4);color:var(--warn)}
+.sc-vermelho{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.4);color:var(--err)}
+
+/* DIST */
+.dl{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.dl-n{font-size:12px;font-weight:700;width:28px;font-family:'Inter',sans-serif}
+.dl-b{flex:1;height:7px;background:rgba(255,255,255,.07);border-radius:10px;overflow:hidden}
+.dl-f{height:100%;border-radius:10px;transition:width 1s ease}
+.dl-p{font-size:12px;font-weight:700;width:34px;text-align:right;font-family:'Inter',sans-serif}
+.dlD .dl-f,.dlD .dl-n,.dlD .dl-p{background:var(--D);color:var(--D)} .dlD .dl-f{background:var(--D)}
+.dlI .dl-f,.dlI .dl-n,.dlI .dl-p{background:var(--I);color:var(--I)} .dlI .dl-f{background:var(--I)}
+.dlS .dl-f,.dlS .dl-n,.dlS .dl-p{background:var(--S);color:var(--S)} .dlS .dl-f{background:var(--S)}
+.dlC .dl-f,.dlC .dl-n,.dlC .dl-p{background:var(--C);color:var(--C)} .dlC .dl-f{background:var(--C)}
+
+/* INFO GRID */
+.igrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+.iitem{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px}
+.iitem-l{font-size:10px;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
+.iitem-v{font-size:13px;color:rgba(255,255,255,.8);line-height:1.5}
+
+/* INSIGHT */
+.ins{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.ins:last-child{border:none}
+.ins-i{font-size:17px;flex-shrink:0;margin-top:2px}
+.ins-t{font-size:13px;color:rgba(255,255,255,.7);line-height:1.6}
+.ins-t strong{color:#fff;font-weight:600}
+
+/* COMO LIDERAR */
+.lid-box{background:rgba(59,179,195,.06);border:1px solid rgba(59,179,195,.15);border-radius:12px;padding:16px}
+.lid-row{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.lid-row:last-child{border:none}
+.lid-l{font-size:11px;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.5px;min-width:90px;padding-top:1px}
+.lid-v{font-size:13px;color:rgba(255,255,255,.8);line-height:1.5}
+
+/* CLIMA RES */
+.cr-item{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.cr-item:last-child{border:none}
+.cr-nome{font-size:13px;color:rgba(255,255,255,.65);flex:1}
+.cr-bar{width:110px;height:5px;background:rgba(255,255,255,.08);border-radius:10px;overflow:hidden}
+.cr-fill{height:100%;border-radius:10px}
+.cr-val{font-size:12px;font-weight:700;width:26px;text-align:right;font-family:'Inter',sans-serif}
+
+/* RISCO */
+.risco-box{padding:12px 16px;border-radius:10px;font-size:13px;margin-top:12px;display:flex;align-items:flex-start;gap:10px}
+.risco-crit{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:rgba(255,255,255,.8)}
+.risco-aten{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);color:rgba(255,255,255,.8)}
+
+/* PDI */
+.pdi-item{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:16px;margin-bottom:10px}
+.pdi-tit{font-size:12px;font-weight:700;color:var(--az);margin-bottom:8px}
+.pdi-input{width:100%;padding:9px 12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;color:#fff;outline:none;margin-bottom:6px}
+.pdi-input:focus{border-color:var(--az)}
+.pdi-row{display:flex;gap:8px}
+.pdi-prazo{flex:1}
+.pdi-status{flex:1}
+.pdi-status select{padding:9px 12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;color:#fff;outline:none;width:100%}
+
+/* OK BOX */
+.ok-box{background:rgba(16,185,129,.08);border:1.5px solid rgba(16,185,129,.25);border-radius:12px;padding:16px 20px;text-align:center;font-size:14px;font-weight:600;color:var(--ok)}
+
+/* PRIORIDADE */
+.prio-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;border:1px solid}
+.prio-alta{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.3);color:var(--err)}
+.prio-media{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.3);color:var(--warn)}
+.prio-baixa{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.3);color:var(--ok)}
+
+/* MODAL */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:999;padding:20px}
+.modal.ab{display:flex}
+.modal-box{background:#0d2535;border:1px solid rgba(59,179,195,.2);border-radius:18px;padding:32px;max-width:460px;width:100%;text-align:center}
+.modal-box h3{font-family:'Urbanist',sans-serif;font-size:20px;font-weight:800;margin-bottom:10px}
+.modal-box p{font-size:14px;color:rgba(255,255,255,.55);margin-bottom:24px;line-height:1.6}
+.mbtns{display:flex;gap:10px}
+
+@media(max-width:540px){
+  .igrid{grid-template-columns:1fr}
+  .copt-lbl{display:none}
+  .g2{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-badge">💙 Contabilidade Bessa</div>
+  <h1>Mapeamento <em>Comportamental</em><br>& Clima Organizacional</h1>
+  <p>Responda com honestidade — não há resposta certa ou errada. Seus dados são tratados com confidencialidade.</p>
+  <div class="hero-tempo">⏱ Aproximadamente 8 minutos</div>
+</div>
+
+<div class="prog">
+  <div class="prog-inner">
+    <div class="prog-row">
+      <span class="prog-label" id="progLabel">Identificação</span>
+      <span class="prog-pct" id="progPct">0%</span>
+    </div>
+    <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+    <div class="etapas">
+      <div class="ed av" id="e0"></div><div class="ed" id="e1"></div>
+      <div class="ed" id="e2"></div><div class="ed" id="e3"></div><div class="ed" id="e4"></div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- SEC 1: ID -->
+  <div class="sec ativa" id="sec1">
+    <div class="id-wrap">
+      <h2>Vamos começar com sua identificação</h2>
+      <p>Digite seu CPF — o sistema identifica você automaticamente e preenche seus dados</p>
+
+      <div id="etCpf">
+        <input class="cpf-inp" type="text" id="cpfInp" placeholder="000.000.000-00" maxlength="14" oninput="mCpf(this)">
+        <div class="cpf-fb" id="cpfFb"></div>
+        <div class="btns" style="justify-content:center">
+          <button class="btn btn-p" style="max-width:220px" onclick="buscarCpf()">Continuar →</button>
+        </div>
+      </div>
+
+      <div id="etConf" style="display:none">
+        <div class="p-card">
+          <div class="p-nome" id="pNome"></div>
+          <div class="p-info" id="pInfo"></div>
+        </div>
+        <div class="btns" style="justify-content:center">
+          <button class="btn btn-s" onclick="voltarCpf()">Não sou eu</button>
+          <button class="btn btn-p" onclick="irSec(2)">Sou eu, continuar →</button>
+        </div>
+      </div>
+
+      <div id="etNovo" style="display:none">
+        <div class="nova-box">
+          <div class="nova-box-t">⚠ CPF não encontrado — preencha seus dados</div>
+          <div class="campo"><label>Nome completo *</label><input type="text" id="nNome" placeholder="Seu nome completo"></div>
+          <div class="g2">
+            <div class="campo"><label>Área *</label>
+              <select id="nSetor">
+                <option value="">Selecione...</option>
+                <option>Societária</option><option>Social</option><option>Tributário</option>
+                <option>Sucesso do Cliente</option><option>Diretoria</option><option>Marketing</option>
+                <option>TI</option><option>Financeiro</option><option>Desenvolvimento</option>
+              </select>
+            </div>
+            <div class="campo"><label>Nível *</label>
+              <select id="nNivel">
+                <option value="">Selecione...</option>
+                <option>Júnior</option><option>Pleno</option><option>Sênior</option>
+                <option>Especialista</option><option>Estagiário</option><option>Gestor</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="btns" style="justify-content:center">
+          <button class="btn btn-s" onclick="voltarCpf()">← Voltar</button>
+          <button class="btn btn-p" onclick="confirmarNovo()">Continuar →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SEC 2: DISC parte 1 -->
+  <div class="sec" id="sec2">
+    <div class="card">
+      <div class="card-titulo">Perfil Comportamental — Parte 1 de 2</div>
+      <p style="font-size:14px;color:rgba(255,255,255,.45);margin-bottom:24px;line-height:1.6">Para cada situação, escolha a opção que <strong style="color:rgba(255,255,255,.8)">mais se parece com você</strong> no dia a dia de trabalho.</p>
+      <div id="dPergs1"></div>
+    </div>
+    <div class="btns">
+      <button class="btn btn-s" onclick="irSec(1)">← Voltar</button>
+      <button class="btn btn-p" onclick="avanD1()">Próximo →</button>
+    </div>
+  </div>
+
+  <!-- SEC 3: DISC parte 2 -->
+  <div class="sec" id="sec3">
+    <div class="card">
+      <div class="card-titulo">Perfil Comportamental — Parte 2 de 2</div>
+      <p style="font-size:14px;color:rgba(255,255,255,.45);margin-bottom:24px;line-height:1.6">Continue escolhendo a opção que mais representa você.</p>
+      <div id="dPergs2"></div>
+    </div>
+    <div class="btns">
+      <button class="btn btn-s" onclick="irSec(2)">← Voltar</button>
+      <button class="btn btn-p" onclick="avanD2()">Próximo →</button>
+    </div>
+  </div>
+
+  <!-- SEC 4: CLIMA -->
+  <div class="sec" id="sec4">
+    <div class="card">
+      <div class="card-titulo">Clima & Saúde no Trabalho</div>
+      <p style="font-size:14px;color:rgba(255,255,255,.45);margin-bottom:6px;line-height:1.6">Para cada afirmação, indique o quanto ela representa <strong style="color:rgba(255,255,255,.8)">sua realidade atual</strong>.</p>
+      <p style="font-size:12px;color:rgba(255,255,255,.25);margin-bottom:24px">1 = Discordo totalmente · 5 = Concordo totalmente</p>
+      <div id="cPergs"></div>
+    </div>
+    <div class="campo">
+      <label>Comentário livre (opcional)</label>
+      <textarea id="cComent" rows="3" placeholder="Algo que queira compartilhar sobre seu ambiente de trabalho..."></textarea>
+    </div>
+    <div class="btns">
+      <button class="btn btn-s" onclick="irSec(3)">← Voltar</button>
+      <button class="btn btn-p" onclick="confirmarEnvio()">Ver meu resultado ✓</button>
+    </div>
+  </div>
+
+  <!-- SEC 5: RESULTADO -->
+  <div class="sec" id="sec5">
+    <div id="resDiv"></div>
+    <div class="ok-box" style="margin-top:16px">✅ Suas respostas foram registradas com sucesso — obrigada!</div>
+    <p style="text-align:center;margin-top:14px;font-size:12px;color:rgba(255,255,255,.3)">Você pode fechar esta janela agora.</p>
+  </div>
+
+</div>
+
+<div class="modal" id="modalConf">
+  <div class="modal-box">
+    <div style="font-size:36px;margin-bottom:12px">✅</div>
+    <h3>Confirmar envio</h3>
+    <p>Tem certeza que deseja enviar suas respostas? Após o envio não será possível editar.</p>
+    <div class="mbtns">
+      <button class="btn btn-s" onclick="document.getElementById('modalConf').classList.remove('ab')">Cancelar</button>
+      <button class="btn btn-p" onclick="enviar()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API='https://script.google.com/macros/s/AKfycbyI6cMx8vclLUSKCUY9gbRAEPPli85FPgdJ40Zl468nVNuCdK_N5bf_akwCw4_P9I4TDw/exec';
+
+// ===== DISC PERGUNTAS — sem revelar letras =====
+const DQ=[
+  {q:"Em situações de pressão, prefiro:",op:{D:"Tomar decisões rápidas e assumir o controle",I:"Motivar e engajar as pessoas ao meu redor",S:"Manter a calma e apoiar quem está ao redor",C:"Analisar cuidadosamente todas as variáveis antes de agir"}},
+  {q:"Quando trabalho em equipe, geralmente:",op:{D:"Lidero e direciono as atividades do grupo",I:"Animo o grupo e trago energia positiva",S:"Ouço todos e busco harmonia e consenso",C:"Organizo processos e garanto a qualidade"}},
+  {q:"Diante de um problema no trabalho, minha tendência é:",op:{D:"Enfrentar diretamente e resolver o quanto antes",I:"Discutir com outras pessoas para encontrar soluções criativas",S:"Avaliar o impacto nas pessoas envolvidas",C:"Analisar dados e buscar a solução mais correta"}},
+  {q:"No ambiente de trabalho, o que mais valorizo é:",op:{D:"Resultados e conquistas concretas",I:"Relacionamentos e ser reconhecido",S:"Estabilidade, cooperação e harmonia",C:"Precisão, qualidade e fazer certo"}},
+  {q:"Meu estilo de comunicação é:",op:{D:"Direto, objetivo e sem rodeios",I:"Expressivo, entusiasmado e envolvente",S:"Calmo, paciente e receptivo",C:"Detalhado, preciso e fundamentado"}},
+  {q:"Ao receber uma tarefa nova, costumo:",op:{D:"Começar imediatamente, focado no resultado",I:"Compartilhar com o time e buscar engajamento",S:"Entender como isso se encaixa na rotina atual",C:"Planejar cada etapa antes de colocar em prática"}},
+  {q:"Em reuniões, tendo a:",op:{D:"Conduzir a discussão para que decisões sejam tomadas",I:"Contribuir com ideias e trazer energia",S:"Ouvir atentamente e mediar quando há tensão",C:"Questionar detalhes e garantir que tudo está claro"}},
+  {q:"O que mais me motiva no trabalho é:",op:{D:"Superar desafios e atingir metas",I:"Ser reconhecido e ter boas conexões com as pessoas",S:"Contribuir para o bem-estar da equipe",C:"Fazer as coisas da forma correta e com qualidade"}},
+  {q:"Ao lidar com mudanças, eu:",op:{D:"Abraço rapidamente se trouxer vantagens",I:"Me adapto com facilidade e ajudo outros a fazer o mesmo",S:"Preciso de um tempo para processar e me ajustar",C:"Analiso os impactos e riscos antes de aceitar"}},
+  {q:"Meu maior temor no ambiente de trabalho é:",op:{D:"Perder o controle ou não atingir os resultados",I:"Ser ignorado, rejeitado ou não reconhecido",S:"Conflitos, instabilidade e mudanças bruscas",C:"Cometer erros, ser mal interpretado ou criticado"}},
+  {q:"Como me enxergo dentro de um time:",op:{D:"Como quem impulsiona e mantém o foco nos resultados",I:"Como quem inspira, motiva e une as pessoas",S:"Como o colaborador confiável e leal que sustenta o grupo",C:"Como o especialista que garante qualidade e precisão"}},
+  {q:"Prefiro ambientes de trabalho que sejam:",op:{D:"Dinâmicos, com metas desafiadoras e autonomia",I:"Colaborativos, sociais e com espaço para criatividade",S:"Estáveis, previsíveis e harmoniosos",C:"Organizados, estruturados e com processos claros"}},
+  {q:"Na hora de tomar decisões, eu:",op:{D:"Decido rapidamente, focado no resultado",I:"Considero o impacto emocional nas pessoas",S:"Busco consenso e evito gerar conflito",C:"Analiso todas as informações disponíveis antes de decidir"}},
+  {q:"Meu principal ponto forte é:",op:{D:"Determinação, liderança e foco em resultados",I:"Entusiasmo, comunicação e habilidade para relacionamentos",S:"Paciência, lealdade e consistência no trabalho em equipe",C:"Atenção aos detalhes, precisão e rigor técnico"}},
+  {q:"Quando recebo um feedback, minha reação é:",op:{D:"Foco em como posso melhorar os resultados",I:"Valorizo o reconhecimento e o que foi bem feito",S:"Ouço com cuidado e evito me defender",C:"Questiono detalhes para entender melhor o que precisa mudar"}},
+  {q:"Me sinto realizado no trabalho quando:",op:{D:"Superei desafios concretos e bati minhas metas",I:"Me conectei com pessoas e fui reconhecido pelo que fiz",S:"Ajudei minha equipe e mantive o ambiente harmonioso",C:"Entreguei um trabalho de alta qualidade e sem erros"}}
+];
+
+// ===== CLIMA =====
+const CQ=[
+  {id:'carga',    q:'Meu volume de trabalho é compatível com meu horário e capacidade.',       fator:'Carga de trabalho'},
+  {id:'autonomia',q:'Tenho liberdade para organizar minha própria forma de trabalhar.',         fator:'Autonomia'},
+  {id:'clareza',  q:'Sei exatamente o que é esperado de mim no meu cargo.',                    fator:'Clareza de papéis'},
+  {id:'relacao',  q:'Me sinto respeitado pela liderança e pelos colegas.',                      fator:'Relacionamento'},
+  {id:'reconhec', q:'Meu trabalho é reconhecido quando bem feito.',                            fator:'Reconhecimento'},
+  {id:'prazos',   q:'Os prazos que recebo são realistas e possíveis de cumprir.',              fator:'Prazos e pressão'},
+  {id:'equilibrio',q:'Consigo me desligar do trabalho fora do meu horário.',                   fator:'Equilíbrio vida-trabalho'},
+  {id:'psico',    q:'Me sinto à vontade para falar quando algo está errado ou me incomoda.',   fator:'Segurança psicológica'}
+];
+
+// ===== PERFIS RICOS =====
+const PERFIS={
+  D:{
+    nome:'Perfil D — Execução',
+    foco:'Resultado e velocidade',
+    cor:'var(--D)',
+    desc:'Você é movido por desafios e resultados. Toma decisões com agilidade, assume o controle com naturalidade e faz as coisas acontecerem. Em situações de pressão, você é quem avança enquanto outros hesitam.',
+    necessidade:'Dominar a situação e ter liberdade para agir',
+    estimulo:'Metas desafiadoras, autonomia e resultados concretos',
+    nao_gosta:'Processos lentos, burocracia e falta de eficiência',
+    feedback:'Direto, objetivo e sem enrolação — foque em resultado',
+    como_liderar:{
+      estilo:'Seja direto, objetivo e apresente desafios',
+      motivador:'Autonomia, metas ambiciosas e reconhecimento por resultado',
+      evitar:'Microgestão, processos lentos e falta de autonomia',
+      erro_comum:'Comunicação pode soar agressiva — ajuste o tom sem perder a objetividade'
+    },
+    forcas:['Decisão rápida e assertividade natural','Liderança em situações de pressão','Foco inabalável em resultados','Capacidade de destravar processos parados'],
+    riscos:['Comunicação pode parecer agressiva ou impatiente','Dificuldade com processos muito burocráticos','Pode decidir rápido demais sem ouvir o time','Impaciência com ritmos diferentes'],
+    dev:'Sua velocidade é um ativo — mas em contabilidade, ter alguém de perfil analítico ao seu lado para revisar os detalhes potencializa seus resultados.',
+    cargos:{
+      'Tributário':'Sua assertividade destrava análises fiscais e garante que prazos críticos sejam cumpridos. Você é quem lidera o time nos fechamentos de alto estresse.',
+      'Social':'Você resolve questões trabalhistas com rapidez e conduz conversas difíceis com clientes sem enrolar. Sua decisão protege os clientes.',
+      'Societária':'Você destrava processos burocráticos, negocia com órgãos públicos e conduz clientes nas etapas mais difíceis de constituição.',
+      'Sucesso do Cliente':'Você resolve problemas do cliente com agilidade, define expectativas claras e não deixa situações arrastarem.',
+      'DEFAULT':'Você tem perfil de execução e liderança, sendo eficaz em qualquer contexto que exija velocidade e foco em resultado.'
+    }
+  },
+  I:{
+    nome:'Perfil I — Comunicação',
+    foco:'Conexão e entusiasmo',
+    cor:'var(--I)',
+    desc:'Você se energiza com pessoas. É comunicativo, otimista e tem um dom natural para inspirar e engajar quem está ao redor. Em momentos difíceis, você é quem mantém o ânimo e a coesão do time.',
+    necessidade:'Receber reconhecimento e estar conectado com pessoas',
+    estimulo:'Ambiente colaborativo, visibilidade e trabalho em equipe',
+    nao_gosta:'Trabalho solitário prolongado, rotina muito detalhista',
+    feedback:'Descontraído, com reconhecimento primeiro — conecte antes de corrigir',
+    como_liderar:{
+      estilo:'Seja relacional, reconheça publicamente e crie espaço para expressão',
+      motivador:'Interação, visibilidade, reconhecimento público e projetos criativos',
+      evitar:'Isolamento, ambientes muito formais e tarefas solitárias longas',
+      erro_comum:'Pode prometer mais do que consegue entregar — alinhe expectativas com clareza'
+    },
+    forcas:['Comunicação clara e envolvente','Facilidade para criar relacionamentos genuínos','Energia positiva que engaja o time','Persuasão e influência natural'],
+    riscos:['Dificuldade com tarefas muito detalhistas','Pode superestimar prazos por querer agradar','Gestão de tempo pode ser um ponto de atenção','Decisões podem ser influenciadas demais pelo que os outros pensam'],
+    dev:'Sua comunicação é poderosa para simplificar o complexo para o cliente. Mas lembre: em contabilidade, o detalhe importa — tenha um perfil analítico revisando seu trabalho.',
+    cargos:{
+      'Tributário':'Você explica conceitos fiscais complexos de forma que o cliente entende. Sua comunicação reduz conflitos e deixa o cliente mais tranquilo.',
+      'Social':'Você lida com colaboradores dos clientes de forma empática e mantém o relacionamento positivo mesmo em situações delicadas.',
+      'Societária':'Você facilita negociações entre sócios e traduz processos burocráticos em linguagem acessível.',
+      'Sucesso do Cliente':'Você está no lugar certo. Sua capacidade de se conectar transforma problemas em oportunidades de fortalecer o relacionamento.',
+      'DEFAULT':'Você traz energia, cria conexões e facilita a comunicação — essenciais em qualquer contexto.'
+    }
+  },
+  S:{
+    nome:'Perfil S — Planejamento',
+    foco:'Estabilidade e harmonia',
+    cor:'var(--S)',
+    desc:'Você é o pilar do time. Paciente, leal e consistente, você mantém tudo funcionando mesmo quando o ambiente ao redor está agitado. As pessoas confiam em você porque você não falha.',
+    necessidade:'Estabilidade, pertencimento e harmonia no ambiente',
+    estimulo:'Segurança, confiança e saber que está contribuindo',
+    nao_gosta:'Mudanças frequentes e bruscas, conflitos desnecessários',
+    feedback:'Organizado, estruturado e com antecedência — mostre que planejou e valorize o que já funciona',
+    como_liderar:{
+      estilo:'Seja calmo, estruturado e dê previsibilidade nas comunicações',
+      motivador:'Segurança, estabilidade, pertencimento e reconhecimento pelo suporte',
+      evitar:'Mudanças bruscas sem aviso e pressão excessiva',
+      erro_comum:'Pode ter dificuldade em se posicionar — ajude a desenvolver assertividade'
+    },
+    forcas:['Consistência e confiabilidade acima da média','Paciência com processos longos e detalhados','Capacidade de manter o time unido','Empatia natural com pessoas'],
+    riscos:['Dificuldade com decisões que geram conflito','Pode ter dificuldade em dizer não','Resistência a mudanças rápidas','Assertividade pode precisar ser desenvolvida'],
+    dev:'Sua consistência é ouro em contabilidade. Trabalhe em desenvolver assertividade — a capacidade de se posicionar com firmeza quando necessário, sem perder sua calma.',
+    cargos:{
+      'Tributário':'Você é excelente em processos que exigem consistência mensal. Sua paciência com legislação complexa e capacidade de seguir procedimentos são fundamentais.',
+      'Social':'Você lida com a sensibilidade das questões trabalhistas com cuidado e mantém a calma em situações delicadas.',
+      'Societária':'Você garante que cada etapa seja cumprida com cuidado. Sua confiabilidade tranquiliza clientes em processos que geram ansiedade.',
+      'Sucesso do Cliente':'Você constrói relacionamentos sólidos e duradouros. Os clientes procuram você porque sabem que podem contar.',
+      'DEFAULT':'Você é o elo que mantém o time unido e garante que as entregas aconteçam com consistência.'
+    }
+  },
+  C:{
+    nome:'Perfil C — Analítico',
+    foco:'Qualidade e precisão',
+    cor:'var(--C)',
+    desc:'Você não entrega nada que não esteja certo. Detalhista, preciso e metódico, você garante que o trabalho seja feito da forma correta. Em uma área onde um erro tem consequências sérias, você é indispensável.',
+    necessidade:'Qualidade, estrutura e informações completas antes de agir',
+    estimulo:'Processos claros, garantias e reconhecimento pela precisão',
+    nao_gosta:'Imprevistos, decisões sem dados suficientes e desorganização',
+    feedback:'Detalhado e baseado em evidências — explique o raciocínio e valorize a precisão',
+    como_liderar:{
+      estilo:'Seja detalhado, lógico e justifique as decisões com dados',
+      motivador:'Qualidade, precisão, processos bem definidos e reconhecimento técnico',
+      evitar:'Pressão sem contexto, mudanças sem explicação e improvisação',
+      erro_comum:'Perfeccionismo pode travar entregas — ajude a calibrar "bom o suficiente"'
+    },
+    forcas:['Atenção aos detalhes que outros não percebem','Qualidade consistente e confiável nas entregas','Capacidade analítica e lógica apurada','Organização e estruturação impecáveis'],
+    riscos:['Perfeccionismo pode travar entregas em prazos apertados','Dificuldade com decisões rápidas sem informação completa','Pode ser introspectivo demais e não compartilhar ideias','Aceitar "bom o suficiente" pode ser um desafio'],
+    dev:'Em contabilidade, sua precisão é um superpoder. O desafio é saber quando avançar mesmo sem o cenário ideal — nem sempre é necessário o nível máximo de detalhe para progredir.',
+    cargos:{
+      'Tributário':'Você está no lugar certo. Sua atenção aos detalhes é essencial onde um número errado pode gerar problemas sérios.',
+      'Social':'Você garante que os cálculos de folha estejam corretos e as obrigações sejam enviadas sem erros. Sua atenção protege os clientes de problemas legais.',
+      'Societária':'Você garante que todos os documentos estejam corretos e que os processos sigam as normas ao pé da letra.',
+      'Sucesso do Cliente':'Você garante que todas as solicitações sejam tratadas com precisão e nenhum detalhe seja perdido.',
+      'DEFAULT':'Você traz precisão, qualidade e organização — pilares fundamentais em contabilidade.'
+    }
+  }
+};
+
+// ===== ESTADO =====
+let pessoa={cpf:'',nome:'',setor:'',nivel:'',isNova:false};
+let dResp={};
+let cResp={};
+
+// ===== CPF =====
+function mCpf(el){
+  let v=el.value.replace(/\D/g,'').slice(0,11);
+  if(v.length>9)v=v.replace(/(\d{3})(\d{3})(\d{3})(\d{1,2})/,'$1.$2.$3-$4');
+  else if(v.length>6)v=v.replace(/(\d{3})(\d{3})(\d{1,3})/,'$1.$2.$3');
+  else if(v.length>3)v=v.replace(/(\d{3})(\d{1,3})/,'$1.$2');
+  el.value=v;
+}
+function nCpf(c){return String(c||'').replace(/\D/g,'')}
+
+function buscarCpf(){
+  const cpf=nCpf(document.getElementById('cpfInp').value);
+  const fb=document.getElementById('cpfFb');
+  if(cpf.length<11){fb.style.color='var(--err)';fb.textContent='CPF inválido — verifique os dígitos';return}
+  fb.style.color='var(--az)';fb.textContent='Buscando...';
+  try{
+    const ps=JSON.parse(localStorage.getItem('bessa_pessoas')||'[]');
+    const p=ps.find(x=>nCpf(x.cpf)===cpf);
+    if(p){
+      pessoa={cpf,nome:p.nome,setor:p.area||p.setor||'',nivel:p.nivel,isNova:false};
+      document.getElementById('pNome').textContent=p.nome;
+      document.getElementById('pInfo').textContent=`${p.area||''} · ${p.nivel||''}`;
+      document.getElementById('etCpf').style.display='none';
+      document.getElementById('etConf').style.display='block';
+      fb.textContent='';
+    } else {
+      pessoa={cpf,nome:'',setor:'',nivel:'',isNova:true};
+      document.getElementById('etCpf').style.display='none';
+      document.getElementById('etNovo').style.display='block';
+      fb.textContent='';
+    }
+  }catch(e){
+    pessoa={cpf,nome:'',setor:'',nivel:'',isNova:true};
+    document.getElementById('etCpf').style.display='none';
+    document.getElementById('etNovo').style.display='block';
+    fb.textContent='';
+  }
+}
+
+function voltarCpf(){
+  pessoa={cpf:'',nome:'',setor:'',nivel:'',isNova:false};
+  document.getElementById('etCpf').style.display='block';
+  document.getElementById('etConf').style.display='none';
+  document.getElementById('etNovo').style.display='none';
+  document.getElementById('cpfFb').textContent='';
+}
+
+function confirmarNovo(){
+  const nome=document.getElementById('nNome').value.trim();
+  const setor=document.getElementById('nSetor').value;
+  const nivel=document.getElementById('nNivel').value;
+  if(!nome||!setor||!nivel){alert('Preencha nome, área e nível.');return}
+  pessoa.nome=nome;pessoa.setor=setor;pessoa.nivel=nivel;
+  try{
+    const ps=JSON.parse(localStorage.getItem('bessa_pessoas')||'[]');
+    if(!ps.find(p=>nCpf(p.cpf)===pessoa.cpf)){
+      ps.push({id:'p_'+Date.now(),cpf:pessoa.cpf,nome,area:setor,nivel,admissao:'',status:'Funcionário',regime:'',email:'',whatsapp:'',disc:'',obs:'Auto-cadastrado via Mapeamento.',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()});
+      localStorage.setItem('bessa_pessoas',JSON.stringify(ps));
+    }
+  }catch(e){}
+  irSec(2);
+}
+
+// ===== DISC RENDER =====
+function renderDisc(ids,elId){
+  const el=document.getElementById(elId);
+  const opcoes=['A','B','C','D'];
+  el.innerHTML=ids.map(i=>{
+    const q=DQ[i];
+    const lets=['D','I','S','C'];
+    const shuffled=lets.map((l,idx)=>({l,txt:q.op[l],ico:opcoes[idx]}));
+    // Embaralhar para não revelar padrão
+    shuffled.sort(()=>Math.random()-.5);
+    return `<div class="dq">
+      <div class="dq-n">Questão ${i+1} de ${DQ.length}</div>
+      <div class="dq-t">${q.q}</div>
+      <div class="dq-opts">${shuffled.map(s=>`
+        <div class="dopt" id="dopt_${i}_${s.l}" onclick="selD(${i},'${s.l}')">
+          <div class="dopt-ico">${s.ico}</div>
+          <span>${s.txt}</span>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function selD(qi,letra){
+  dResp[qi]=letra;
+  ['D','I','S','C'].forEach(l=>{
+    const el=document.getElementById(`dopt_${qi}_${l}`);
+    if(el)el.className='dopt'+(l===letra?' sel':'');
+  });
+}
+
+// ===== CLIMA RENDER =====
+function renderClima(){
+  const el=document.getElementById('cPergs');
+  el.innerHTML=CQ.map((cq,i)=>`
+    <div class="cq">
+      <div class="cq-fator">${cq.fator}</div>
+      <div class="cq-t">${cq.q}</div>
+      <div class="cq-esc">
+        ${[1,2,3,4,5].map(v=>`
+          <div class="copt" id="copt_${i}_${v}" onclick="selC(${i},'${cq.id}',${v})">
+            <div class="copt-btn">${v}</div>
+            <div class="copt-lbl">${v===1?'Discordo totalmente':v===5?'Concordo totalmente':''}</div>
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function selC(qi,id,val){
+  cResp[id]=val;
+  [1,2,3,4,5].forEach(v=>{
+    const el=document.getElementById(`copt_${qi}_${v}`);
+    if(el)el.className=`copt${v===val?' s'+v:''}`;
+  });
+}
+
+// ===== MOTOR DE DECISÃO =====
+function classificarColaborador(climaMedia){
+  if(climaMedia<3)return{status:'critico',label:'🔴 Risco Operacional',acao:'Intervenção imediata — realizar 1:1 em até 7 dias',cls:'sc-vermelho'};
+  if(climaMedia<3.8)return{status:'atencao',label:'🟡 Atenção',acao:'Acompanhar de perto e ajustar fatores de risco',cls:'sc-amarelo'};
+  return{status:'saudavel',label:'🟢 Performance Sustentável',acao:'Manter e desenvolver',cls:'sc-verde'};
+}
+
+function mapearRiscos(cr){
+  const r=[];
+  if(cr.carga<=2)r.push({f:'Carga de trabalho',txt:'Sobrecarga identificada — revisar distribuição de demandas'});
+  if(cr.prazos<=2)r.push({f:'Prazos e pressão',txt:'Pressão por prazos acima do saudável — avaliar volume e priorização'});
+  if(cr.psico<=2)r.push({f:'Segurança psicológica',txt:'Ambiente inseguro para expressão — atenção à liderança e cultura'});
+  if(cr.relacao<=2)r.push({f:'Relacionamento',txt:'Problemas de relacionamento com equipe ou liderança'});
+  if(cr.autonomia<=2)r.push({f:'Autonomia',txt:'Baixa autonomia — pode gerar dependência excessiva ou desmotivação'});
+  if(cr.equilibrio<=2)r.push({f:'Equilíbrio vida-trabalho',txt:'Risco de esgotamento — avaliar jornada e desconexão'});
+  return r;
+}
+
+function gerarInsightsDISC(disc,cr){
+  const ins=[];
+  if(disc==='D'&&cr.relacao<=2)ins.push({tipo:'warn',txt:'Risco de comunicação agressiva impactando o time — alinhar estilo de comunicação'});
+  if(disc==='D'&&cr.prazos<=2)ins.push({tipo:'warn',txt:'Alta pressão pode gerar decisões precipitadas — avaliar sobrecarga de responsabilidades'});
+  if(disc==='I'&&cr.reconhec<=2)ins.push({tipo:'warn',txt:'Desmotivação por falta de reconhecimento — este perfil precisa de feedback positivo frequente'});
+  if(disc==='I'&&cr.carga<=2)ins.push({tipo:'warn',txt:'Risco de perda de foco e execução inconsistente sob alta carga'});
+  if(disc==='S'&&cr.autonomia<=2)ins.push({tipo:'err',txt:'Dependência excessiva da liderança — desenvolver autonomia com segurança e suporte'});
+  if(disc==='S'&&cr.relacao<=2)ins.push({tipo:'err',txt:'Sofrimento silencioso no ambiente — este perfil não costuma verbalizar problemas, requer atenção ativa'});
+  if(disc==='C'&&cr.prazos<=2)ins.push({tipo:'warn',txt:'Perfeccionismo sob pressão pode travar entregas — calibrar nível de qualidade x prazo'});
+  if(disc==='C'&&cr.psico<=2)ins.push({tipo:'err',txt:'Ambiente inseguro reduz qualidade e confiança — este perfil precisa de clareza e estrutura'});
+  return ins;
+}
+
+function prioridadeAcao(riscos,insights){
+  if(riscos.length>=3||insights.some(i=>i.tipo==='err'))return{label:'Alta prioridade',sub:'Agir em até 7 dias',cls:'prio-alta'};
+  if(riscos.length>=1||insights.length>=1)return{label:'Média prioridade',sub:'Acompanhar no próximo mês',cls:'prio-media'};
+  return{label:'Baixa prioridade',sub:'Manter monitoramento regular',cls:'prio-baixa'};
+}
+
+function gerarPDI(disc,cr,riscos){
+  const pdi=[];
+  if(cr.carga<=2||cr.prazos<=2)pdi.push({titulo:'Gestão de carga e prazos',acao:'Mapear demandas da semana e redistribuir prioridades com o gestor',prazo:'15 dias'});
+  if(cr.autonomia<=2)pdi.push({titulo:'Desenvolvimento de autonomia',acao:'Identificar 3 decisões do dia a dia onde pode agir sem consultar antes',prazo:'30 dias'});
+  if(cr.psico<=2||cr.relacao<=2)pdi.push({titulo:'Fortalecimento do ambiente',acao:'Realizar 1:1 estruturado para ouvir percepções e identificar causas',prazo:'15 dias'});
+  if(cr.reconhec<=2)pdi.push({titulo:'Reconhecimento e engajamento',acao:'Criar rotina de feedback positivo semanal para o colaborador',prazo:'30 dias'});
+  if(disc==='C'&&cr.prazos<=2)pdi.push({titulo:'Equilíbrio qualidade × velocidade',acao:'Definir limite de tempo por tarefa para calibrar nível de detalhe',prazo:'15 dias'});
+  if(disc==='S'&&cr.autonomia<=2)pdi.push({titulo:'Autonomia e posicionamento',acao:'Praticar decisões independentes em situações de baixo risco',prazo:'30 dias'});
+  return pdi.slice(0,3);
+}
+
+// ===== NAVEGAÇÃO =====
+function irSec(n){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('ativa'));
+  document.getElementById('sec'+n).classList.add('ativa');
+  window.scrollTo({top:0,behavior:'smooth'});
+  const labels=['','Identificação','Comportamental — Pt. 1','Comportamental — Pt. 2','Clima & Saúde','Resultado'];
+  const pcts=[0,0,25,55,80,100];
+  document.getElementById('progLabel').textContent=labels[n]||'';
+  document.getElementById('progFill').style.width=pcts[n]+'%';
+  document.getElementById('progPct').textContent=pcts[n]+'%';
+  for(let i=0;i<5;i++){
+    const d=document.getElementById('e'+i);
+    d.className='ed'+(i+1<n?' ok':i+1===n?' av':'');
+  }
+}
+
+function avanD1(){
+  const nr=Array.from({length:8},(_,i)=>i).filter(i=>!dResp[i]);
+  if(nr.length){alert(`Responda a questão ${nr[0]+1} antes de continuar.`);return}
+  irSec(3);
+}
+function avanD2(){
+  const nr=Array.from({length:8},(_,i)=>i+8).filter(i=>!dResp[i]);
+  if(nr.length){alert(`Responda a questão ${nr[0]+1} antes de continuar.`);return}
+  irSec(4);
+}
+
+function confirmarEnvio(){
+  const nr=CQ.filter(q=>!cResp[q.id]);
+  if(nr.length){alert(`Responda: "${nr[0].q}"`);return}
+  document.getElementById('modalConf').classList.add('ab');
+}
+
+// ===== ENVIAR =====
+function enviar(){
+  document.getElementById('modalConf').classList.remove('ab');
+  const pts={D:0,I:0,S:0,C:0};
+  Object.values(dResp).forEach(l=>{if(l)pts[l]++});
+  const dom=Object.entries(pts).sort((a,b)=>b[1]-a[1])[0][0];
+  const tot=Object.values(pts).reduce((a,b)=>a+b,0)||1;
+  const perc={D:Math.round(pts.D/tot*100),I:Math.round(pts.I/tot*100),S:Math.round(pts.S/tot*100),C:Math.round(pts.C/tot*100)};
+  const climaMedia=Object.values(cResp).reduce((a,b)=>a+b,0)/CQ.length;
+  const riscos=mapearRiscos(cResp);
+  const insights=gerarInsightsDISC(dom,cResp);
+  const classif=classificarColaborador(climaMedia);
+  const prio=prioridadeAcao(riscos,insights);
+  const pdi=gerarPDI(dom,cResp,riscos);
+
+  // Atualizar DISC no cadastro
+  try{
+    const ps=JSON.parse(localStorage.getItem('bessa_pessoas')||'[]');
+    const idx=ps.findIndex(p=>nCpf(p.cpf)===pessoa.cpf);
+    if(idx>=0){ps[idx].disc=dom;ps[idx].updatedAt=new Date().toISOString();localStorage.setItem('bessa_pessoas',JSON.stringify(ps));}
+  }catch(e){}
+
+  // Salvar no histórico
+  try{
+    const hist=JSON.parse(localStorage.getItem('bessa_disc_hist')||'[]');
+    const cRespPref = Object.fromEntries(Object.entries(cResp).map(([k,v])=>['clima_'+k,v]));
+    hist.push({cpf:pessoa.cpf,nome:pessoa.nome,data:new Date().toISOString().slice(0,7),disc:dom,clima:climaMedia,...cResp,...cRespPref});
+    localStorage.setItem('bessa_disc_hist',JSON.stringify(hist));
+  }catch(e){}
+
+  renderResultado(dom,perc,climaMedia,riscos,insights,classif,prio,pdi);
+
+  // Enviar ao Google Sheets com campos padronizados
+  const payloadDisc = {
+    action:'saveDiscClima',
+    nome:pessoa.nome, setor:pessoa.setor||'', nivel:pessoa.nivel||'',
+    tipo_avaliacao: pessoa.tipo_avaliacao||'',
+    data:new Date().toISOString(),
+    perfil_dominante:dom,   // campo que o painel lê
+    disc_D:perc.D, disc_I:perc.I, disc_S:perc.S, disc_C:perc.C,
+    // Clima com os dois formatos para compatibilidade
+    ...Object.fromEntries(CQ.map(q=>['clima_'+q.id, cResp[q.id]])),
+    ...Object.fromEntries(CQ.map(q=>[q.id, cResp[q.id]])),
+    clima: climaMedia.toFixed(2)
+  };
+  fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payloadDisc)}).catch(()=>{});
+
+  irSec(5);
+}
+
+// ===== RENDER RESULTADO =====
+function renderResultado(dom,perc,climaMedia,riscos,insights,classif,prio,pdi){
+  const p=PERFIS[dom];
+  const setor=pessoa.setor||'DEFAULT';
+  const textoArea=p.cargos[setor]||p.cargos['DEFAULT'];
+  const cBCor=(v)=>v>=4?'var(--ok)':v>=3?'var(--warn)':'var(--err)';
+
+  const pdiHtml=pdi.length?`
+    <div class="card">
+      <div class="card-titulo">📋 PDI Sugerido — Plano de Desenvolvimento</div>
+      <p style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:14px">Sugestões baseadas nas suas respostas. Seu gestor poderá ajustar antes de finalizar.</p>
+      ${pdi.map((item,i)=>`
+        <div class="pdi-item">
+          <div class="pdi-tit">Ação ${i+1}</div>
+          <input class="pdi-input" value="${item.titulo}" placeholder="Título da ação">
+          <input class="pdi-input" value="${item.acao}" placeholder="Descrição da ação">
+          <div class="pdi-row">
+            <div class="pdi-prazo"><input class="pdi-input" value="Prazo: ${item.prazo}" style="margin:0"></div>
+            <div class="pdi-status"><select class="pdi-input" style="margin:0"><option>⏳ Pendente</option><option>🔄 Em andamento</option><option>✅ Concluída</option></select></div>
+          </div>
+        </div>`).join('')}
+    </div>`:''
+
+  document.getElementById('resDiv').innerHTML=`
+    <div class="res-hero p${dom}">
+      <div class="perf-circulo">Perfil<br>${dom}<br>—<br>${p.foco.split(' e ')[0]}</div>
+      <div class="perf-nome">${p.nome}</div>
+      <div class="perf-foco">Foco em ${p.foco}</div>
+      <div style="text-align:center;margin:8px 0">
+        <span class="score-badge ${classif.cls}">${classif.label}</span>
+      </div>
+      <div class="perf-desc">${p.desc}</div>
+    </div>
+
+    <div class="card">
+      <div class="card-titulo">📊 Distribuição do seu perfil</div>
+      ${['D','I','S','C'].map(l=>`
+        <div class="dl dl${l}">
+          <span class="dl-n">${l}</span>
+          <div class="dl-b"><div class="dl-f" style="width:${perc[l]}%"></div></div>
+          <span class="dl-p">${perc[l]}%</span>
+        </div>`).join('')}
+      <div style="margin-top:12px;padding:12px;background:rgba(59,179,195,.06);border:1px solid rgba(59,179,195,.12);border-radius:9px;font-size:13px;color:rgba(255,255,255,.7);line-height:1.6">
+        💙 <strong>Na prática:</strong> ${textoArea}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-titulo">✨ Como você funciona</div>
+      <div class="igrid">
+        <div class="iitem"><div class="iitem-l">Principal necessidade</div><div class="iitem-v">${p.necessidade}</div></div>
+        <div class="iitem"><div class="iitem-l">O que te energiza</div><div class="iitem-v">${p.estimulo}</div></div>
+        <div class="iitem"><div class="iitem-l">O que te incomoda</div><div class="iitem-v">${p.nao_gosta}</div></div>
+        <div class="iitem"><div class="iitem-l">Como prefere feedback</div><div class="iitem-v">${p.feedback}</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-titulo">🎯 Como liderar este perfil</div>
+      <div class="lid-box">
+        <div class="lid-row"><span class="lid-l">Estilo ideal</span><span class="lid-v">${p.como_liderar.estilo}</span></div>
+        <div class="lid-row"><span class="lid-l">O que motiva</span><span class="lid-v">${p.como_liderar.motivador}</span></div>
+        <div class="lid-row"><span class="lid-l">O que evitar</span><span class="lid-v">${p.como_liderar.evitar}</span></div>
+        <div class="lid-row"><span class="lid-l">Erro comum</span><span class="lid-v">${p.como_liderar.erro_comum}</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-titulo">💪 Pontos fortes</div>
+      ${p.forcas.map(f=>`<div class="ins"><span class="ins-i">✅</span><div class="ins-t">${f}</div></div>`).join('')}
+    </div>
+
+    <div class="card">
+      <div class="card-titulo">🔧 Pontos de atenção</div>
+      ${p.riscos.map(r=>`<div class="ins"><span class="ins-i">⚡</span><div class="ins-t">${r}</div></div>`).join('')}
+      <div style="margin-top:14px;padding:13px;background:rgba(59,179,195,.06);border:1px solid rgba(59,179,195,.12);border-radius:9px;font-size:13px;color:rgba(255,255,255,.7);line-height:1.6">💙 <strong>Para a Bessa:</strong> ${p.dev}</div>
+    </div>
+
+    <div class="card">
+      <div class="card-titulo">🌡 Clima & Saúde no Trabalho</div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+        <div style="font-size:32px;font-weight:800;color:${cBCor(climaMedia)};font-family:'Inter',sans-serif">${climaMedia.toFixed(1)}</div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:${cBCor(climaMedia)}">${climaMedia>=4?'Ambiente saudável':climaMedia>=3?'Atenção a alguns pontos':'Fatores de risco identificados'}</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.35)">Média geral — escala 1 a 5</div>
+        </div>
+        <div style="margin-left:auto"><span class="prio-chip ${prio.cls}">${prio.label}</span></div>
+      </div>
+      ${CQ.map(q=>{
+        const v=cResp[q.id]||0;
+        const cor=v>=4?'var(--ok)':v>=3?'var(--warn)':'var(--err)';
+        return `<div class="cr-item">
+          <div class="cr-nome">${q.fator}</div>
+          <div class="cr-bar"><div class="cr-fill" style="width:${v/5*100}%;background:${cor}"></div></div>
+          <div class="cr-val" style="color:${cor}">${v}/5</div>
+        </div>`;
+      }).join('')}
+      ${riscos.length?`
+        <div class="risco-box risco-crit" style="margin-top:14px">
+          <span style="font-size:18px">⚠️</span>
+          <div><strong style="color:var(--err)">Fatores de risco identificados:</strong><br>
+          ${riscos.map(r=>`<div style="margin-top:4px;font-size:12px">• ${r.f}: ${r.txt}</div>`).join('')}</div>
+        </div>`:''}
+      ${insights.length?`
+        <div style="margin-top:12px">
+          <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Cruzamento Perfil × Clima</div>
+          ${insights.map(ins=>`<div class="risco-box ${ins.tipo==='err'?'risco-crit':'risco-aten'}"><span style="font-size:16px">${ins.tipo==='err'?'🔴':'⚡'}</span><div>${ins.txt}</div></div>`).join('')}
+        </div>`:''}
+    </div>
+
+    ${pdiHtml}
+
+    <div class="card" style="text-align:center">
+      <div style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:8px">Seu gestor terá acesso a este relatório no painel de gestão.</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.25)">Os dados de clima são tratados de forma agregada para garantir sua privacidade.</div>
+    </div>`;
+}
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded',()=>{
+  renderDisc([0,1,2,3,4,5,6,7],'dPergs1');
+  renderDisc([8,9,10,11,12,13,14,15],'dPergs2');
+  renderClima();
+});
+</script>
+</body>
+</html>
